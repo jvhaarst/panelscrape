@@ -148,6 +148,7 @@ def solar_bouwmarkt(df,URL):
 
 def solargarant(df,URL):
     shop = "solargarant"
+    WP_recipe='([1234]\d{2})\s*[wW]+[pP]+|([1234]\d{2})\s*![wW]*![pP]*'
     try:
         # Get the webpage from the URL
         response = requests.get(URL)
@@ -169,14 +170,19 @@ def solargarant(df,URL):
             # Parse the page
             soup = BeautifulSoup(response.text, "lxml")
             try:
-                for innerdiv in soup.find_all("div", {"data-loop"}):
-                    price = innerdiv.find("span", {"class":"woocommerce-Price-currencySymbol"}).text.split()[0]
+                for innerdiv in soup.select("div[data-loop]"):
+                    price = innerdiv.find_all("span", {"class":"woocommerce-Price-amount amount"})[-1].text.split()[0]
                     name =  innerdiv.find("h3", {"class":"product-title"}).text
                     m = re.search(WP_recipe, name)
                     if m:
                         power = m.group(1)
                     else:
-                        power = 0
+                        WP_recipe='([1234]\d{2})\s*[wW]*[pP]*'
+                        m = re.search(WP_recipe, name)
+                        if m:
+                            power = m.group(1)
+                        else:
+                            power = 0
                     # Add data to dataframe
                     data = {}
                     data['Shop'] = shop
@@ -431,7 +437,7 @@ df = jenm(df)
 df = kerst_energy(df)
 for URL in ['https://www.solar-bouwmarkt.nl/zonnepanelen/alle-zonnepanelen/','https://www.solar-bouwmarkt.nl/zonnepanelen/alle-zonnepanelen/page2.html']:
     df = solar_bouwmarkt(df,URL)
-for URL in ['https://solargarant.nl/zonnepanelen/monokristallijn/','https://solargarant.nl/zonnepanelen/polykristallijn/','https://solargarant.nl/zonnepanelen/zwart-fullblack/']:
+for URL in ['https://solargarant.nl/monokristallijn/','https://solargarant.nl/polykristallijn/','https://solargarant.nl/zwart-fullblack-zonnepanelen/']:
     df = solargarant(df,URL)
 URL="https://stralendgroen.nl/categorie/zonnepanelen/"
 df = stralendgroen(df,URL)
