@@ -19,69 +19,59 @@ filename = 'zonnepanelen.'+datetime.date.today().isoformat()+'.csv.xz'
 start=time.time()
 
 def jenm(df):
-    URL='https://www.jenm-zonnepanelen.nl/zonnepanelen/'
     shop = "jenm"
-    # Get the webpage from the URL
-    response = requests.get(URL)
-    # Parse the page
-    soup = BeautifulSoup(response.text, "lxml")
-    # Find the div block we are interested in
-    identifier="categories row"
-    div = soup.find("div", {"class":identifier})
-    # Grab all sub URLs
-    sub_URLs= []
-    for sub in div.find_all("a"):
-        sub_URL = sub.get('href')
-        sub_URLs.append(sub_URL)
-    for sub_URL in sub_URLs:
+    try:
+        WP_recipe='([1234]\d{2})\s*[wW]*[pP]*'
+        URL='https://www.jenm-zonnepanelen.nl/zonnepanelen/'
         # Get the webpage from the URL
-        response = requests.get(sub_URL)
+        response = requests.get(URL)
         # Parse the page
         soup = BeautifulSoup(response.text, "lxml")
         # Find the div block we are interested in
-        identifier="products row"
+        identifier="container catalog"
         div = soup.find("div", {"class":identifier})
-        identifier = "info"
-        for info in div.find_all("div", {"class":identifier}):
-            product_URL=info.find("a").get('href')
+        # Grab all sub URLs
+        sub_URLs= []
+        for sub in div.find_all("a"):
+            sub_URL = sub.get('href')
+            sub_URLs.append(sub_URL)
+        for sub_URL in sub_URLs:
             # Get the webpage from the URL
-            response = requests.get(product_URL)
+            response = requests.get(sub_URL)
             # Parse the page
             soup = BeautifulSoup(response.text, "lxml")
-            identifier = "offerDetails"
             # Find the div block we are interested in
-            innerdiv = soup.find("div", {"itemprop":identifier})
-            price = innerdiv.find("span", {"class":"price"}).text
-            name = soup.find(itemprop="description")['content']
-            # Specs
-            identifier = "page specs"
-            # Find the div block we are interested in
-            #try:
-            #    for innerdiv in soup.find("div", {"class":identifier}):
-            #        table = innerdiv.find("table")
-            #        try:
-            #            for row in table.find_all('tr'):
-            #                columns = row.find_all('td')
-            #                data[columns[0].get_text()]=columns[1].get_text()
-            #        except AttributeError:
-            #            pass
-            #except TypeError:
-            #    pass
-            m = re.search(WP_recipe, name)
-            if m:
-                power = m.group(1)
-            else:
-                power = 0
-            data = {}
-            data['Shop'] = shop
-            data['Prijs'] = str.join('.',price.strip('€').split(','))
-            data['Naam'] = name     
-            data['power'] = power
-            data['URL'] = product_URL
-            df = df.append(data , ignore_index=True)
+            identifier="container collection"
+            div = soup.find("div", {"class":identifier})
+            identifier = "product-block"
+            for info in div.find_all("div", {"class":identifier}):
+                product_URL=info.find("a").get('href')
+                # Get the webpage from the URL
+                response = requests.get(product_URL)
+                # Parse the page
+                soup = BeautifulSoup(response.text, "lxml")
+                identifier = "offer-holder"
+                # Find the div block we are interested in
+                innerdiv = soup.find("div", {"class":identifier})
+                price = innerdiv.find("span", {"class":"price"}).text
+                name  = innerdiv.find("div", {"class":"product-description"}).text
+                m = re.search(WP_recipe, name)
+                if m:
+                    power = m.group(1)
+                else:
+                    power = 0
+                data = {}
+                data['Shop'] = shop
+                data['Prijs'] = str.join('.',price.strip('€').split(','))
+                data['Naam'] = re.sub('\n.*', '', name.strip())
+                data['power'] = power
+                data['URL'] = product_URL
+                df = df.append(data , ignore_index=True)
+    except:
+        print("Skipped {}".format(shop))
     return df
 
-#df = jenm(df)
+df = jenm(df)
 
 def kerst_energy(df):
     shop = "kerst-energy"
@@ -202,7 +192,7 @@ def solargarant(df,URL):
             except AttributeError:
                 pass
     except:
-        pass
+        print("Skipped {}".format(shop))
     return df
 
 for URL in ['https://solargarant.nl/zonnepanelen/monokristallijn/','https://solargarant.nl/zonnepanelen/polykristallijn/','https://solargarant.nl/zonnepanelen/zwart-fullblack/']:
@@ -452,7 +442,7 @@ def zonnepanelenvoordelig(df,URL):
             data['URL'] = URL
             df = df.append(data , ignore_index=True)
         except:
-            pass
+            print("Skipped {}".format(shop))
     return df
 
 URL='https://www.zonnepanelen-voordelig.nl/contents/phpsearch/search.php?=undefined&filterproc=filtersearch&fmt=html&pgid=d361&sub=1&searchFormSortBy=P-A&searchFormDisplayStyle=T&design=sfx-126_1&lang=nl&limitResultsPerPage=100'
