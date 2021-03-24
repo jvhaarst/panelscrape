@@ -310,7 +310,7 @@ def euro_electronics(df,URL):
     table = div.find("table")
     for row in table.find_all('tr'):
         try:
-            price = row.find("div", {"class":'incl-price'}).text.strip()
+            price = row.find("div", {"class":'Price ListWithPhoto_Price'}).text.strip()
             price = re.sub('[\s*]','',price)
             price = str.join('.',price.strip('€').split(','))
             if '€' in price:
@@ -480,7 +480,7 @@ df = sun_solar(df,URL)
 for URL in ['https://www.winkelman-zonnepanelen.nl/zonnepanelen/','https://www.winkelman-zonnepanelen.nl/zonnepanelen/page2.html']:
     df = winkelman(df,URL)
 
-URL='https://www.euro-electronics.nl/zonnepanelen#filter:426d84a59a48254414a822135700a860'
+URL='https://www.euro-electronics.nl/zonnepanelen'
 df = euro_electronics(df,URL)
 
 URL='https://www.solar-outlet.nl/zonnepanelen/alle-zonnepanelen/'
@@ -492,11 +492,11 @@ df = blijmetzonnepanelen(df,URL)
 for URL in ['https://www.abczonnepanelen.nl/zonnepanelen/losse-zonnepanelen/sunpower/','https://www.abczonnepanelen.nl/zonnepanelen/losse-zonnepanelen/lg-electronic/']:
     df = abczonnepanelen(df,URL)
 
-URL='https://www.zonnepanelen-voordelig.nl/contents/phpsearch/search.php?=undefined&filterproc=filtersearch&fmt=html&pgid=d361&sub=1&searchFormSortBy=P-A&searchFormDisplayStyle=T&design=sfx-126_1&lang=nl&limitResultsPerPage=100'
-URL='https://www.zonnepanelen-voordelig.nl/contents/nl/d361_Zonnepanelen_kopen.html?start_page=1&searchFormSortBy=R-A&searchFormRootUse=A&limitResultsPerPage=100'
-df = zonnepanelenvoordelig(df,URL)
+#URL='https://www.zonnepanelen-voordelig.nl/contents/phpsearch/search.php?=undefined&filterproc=filtersearch&fmt=html&pgid=d361&sub=1&searchFormSortBy=P-A&searchFormDisplayStyle=T&design=sfx-126_1&lang=nl&limitResultsPerPage=100'
+#URL='https://www.zonnepanelen-voordelig.nl/contents/nl/d361_Zonnepanelen_kopen.html?start_page=1&searchFormSortBy=R-A&searchFormRootUse=A&limitResultsPerPage=100'
+#df = zonnepanelenvoordelig(df,URL)
 
-print(df)
+# print(df)
 # Clean up dataframe
 df['power'] = df['power'].astype(float)
 df['Prijs'] = df['Prijs'].astype(float)
