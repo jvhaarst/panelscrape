@@ -71,7 +71,6 @@ def jenm(df):
         print("Skipped {}".format(shop))
     return df
 
-df = jenm(df)
 
 def kerst_energy(df):
     shop = "kerst-energy"
@@ -119,7 +118,6 @@ def kerst_energy(df):
             df = df.append(data , ignore_index=True)
     return df
 
-df = kerst_energy(df)
 
 def solar_bouwmarkt(df,URL):
     shop = "solar-bouwmarkt"
@@ -147,8 +145,6 @@ def solar_bouwmarkt(df,URL):
         df = df.append(data , ignore_index=True)
     return df
 
-for URL in ['https://www.solar-bouwmarkt.nl/zonnepanelen/alle-zonnepanelen/','https://www.solar-bouwmarkt.nl/zonnepanelen/alle-zonnepanelen/page2.html']:
-    df = solar_bouwmarkt(df,URL)
 
 def solargarant(df,URL):
     shop = "solargarant"
@@ -195,8 +191,6 @@ def solargarant(df,URL):
         print("Skipped {}".format(shop))
     return df
 
-for URL in ['https://solargarant.nl/zonnepanelen/monokristallijn/','https://solargarant.nl/zonnepanelen/polykristallijn/','https://solargarant.nl/zonnepanelen/zwart-fullblack/']:
-    df = solargarant(df,URL)
 
 def stralendgroen(df,URL):
     shop = "stralendgroen"
@@ -222,8 +216,6 @@ def stralendgroen(df,URL):
         df = df.append(data , ignore_index=True)
     return df
 
-URL="https://stralendgroen.nl/categorie/zonnepanelen/"
-df = stralendgroen(df,URL)
 
 def sun_solar(df,URL):
     shop = "sun_solar"
@@ -251,8 +243,6 @@ def sun_solar(df,URL):
         df = df.append(data , ignore_index=True)
     return df
 
-URL='https://www.sun-solar.nl/index.php/product-categorie/zonnepanelen/?avia_extended_shop_select=yes&product_count=45'
-df = sun_solar(df,URL)
 
 def winkelman(df,URL):
     shop = "winkelman"
@@ -278,8 +268,6 @@ def winkelman(df,URL):
         df = df.append(data , ignore_index=True)
     return df
 
-URL='https://www.winkelman-zonnepanelen.nl/producten/zonnepanelen/'
-df = winkelman(df,URL)
 
 def euro_electronics(df,URL):
     shop = "euro-electronics.nl"
@@ -313,8 +301,6 @@ def euro_electronics(df,URL):
             pass
     return df
 
-URL='https://www.euro-electronics.nl/zonnepanelen#filter:426d84a59a48254414a822135700a860'
-df = euro_electronics(df,URL)
 
 def solar_outlet(df,URL):
     shop = "solar-outlet.nl"
@@ -342,8 +328,6 @@ def solar_outlet(df,URL):
             pass
     return df
 
-URL='https://www.solar-outlet.nl/zonnepanelen/alle-zonnepanelen/'
-df = solar_outlet(df,URL)
 
 def blijmetzonnepanelen(df,URL):
     shop = "blijmetzonnepanelen.nl"
@@ -371,8 +355,6 @@ def blijmetzonnepanelen(df,URL):
             pass
     return df
 
-URL='https://www.blijmetzonnepanelen.nl/product-categorie/zonnepanelen/'
-df = blijmetzonnepanelen(df,URL)
 
 def abczonnepanelen(df,URL):
     shop = "abczonnepanelen"
@@ -402,8 +384,6 @@ def abczonnepanelen(df,URL):
             pass
     return df
 
-for URL in ['https://www.abczonnepanelen.nl/zonnepanelen/losse-zonnepanelen/sunpower/','https://www.abczonnepanelen.nl/zonnepanelen/losse-zonnepanelen/lg-electronic/']:
-    df = abczonnepanelen(df,URL)
 
 def zonnepanelenvoordelig(df,URL):
     shop = "zonnepanelen-voordelig"
@@ -445,8 +425,31 @@ def zonnepanelenvoordelig(df,URL):
             print("Skipped {}".format(shop))
     return df
 
+
+# Run functions that get and parse each site
+df = jenm(df)
+df = kerst_energy(df)
+for URL in ['https://www.solar-bouwmarkt.nl/zonnepanelen/alle-zonnepanelen/','https://www.solar-bouwmarkt.nl/zonnepanelen/alle-zonnepanelen/page2.html']:
+    df = solar_bouwmarkt(df,URL)
+for URL in ['https://solargarant.nl/zonnepanelen/monokristallijn/','https://solargarant.nl/zonnepanelen/polykristallijn/','https://solargarant.nl/zonnepanelen/zwart-fullblack/']:
+    df = solargarant(df,URL)
+URL="https://stralendgroen.nl/categorie/zonnepanelen/"
+df = stralendgroen(df,URL)
+URL='https://www.sun-solar.nl/index.php/product-categorie/zonnepanelen/?avia_extended_shop_select=yes&product_count=45'
+df = sun_solar(df,URL)
+URL='https://www.winkelman-zonnepanelen.nl/producten/zonnepanelen/'
+df = winkelman(df,URL)
+URL='https://www.euro-electronics.nl/zonnepanelen#filter:426d84a59a48254414a822135700a860'
+df = euro_electronics(df,URL)
+URL='https://www.solar-outlet.nl/zonnepanelen/alle-zonnepanelen/'
+df = solar_outlet(df,URL)
+URL='https://www.blijmetzonnepanelen.nl/product-categorie/zonnepanelen/'
+df = blijmetzonnepanelen(df,URL)
+for URL in ['https://www.abczonnepanelen.nl/zonnepanelen/losse-zonnepanelen/sunpower/','https://www.abczonnepanelen.nl/zonnepanelen/losse-zonnepanelen/lg-electronic/']:
+    df = abczonnepanelen(df,URL)
 URL='https://www.zonnepanelen-voordelig.nl/contents/phpsearch/search.php?=undefined&filterproc=filtersearch&fmt=html&pgid=d361&sub=1&searchFormSortBy=P-A&searchFormDisplayStyle=T&design=sfx-126_1&lang=nl&limitResultsPerPage=100'
 df = zonnepanelenvoordelig(df,URL)
+
 
 #
 df['power'] = df['power'].astype(float)
