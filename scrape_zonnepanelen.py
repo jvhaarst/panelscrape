@@ -76,74 +76,80 @@ def jenm(df):
 def kerst_energy(df):
     shop = "kerst-energy"
     URL='https://www.kerst-energy.eu/nederlands/zonnepanelen/losse-zonnepanelen/'
-    # Get the webpage from the URL
-    response = requests.get(URL)
-    # Parse the page
-    soup = BeautifulSoup(response.text, "lxml")
-    # Find the div block we are interested in
-    identifier = "content_area"
-    div = soup.find("div", {"id":identifier})
-    sub_URLs = []
-    # Grab all sub URLs
-    for sub in div.find_all("a"):
-        sub_URL = sub.get('href')
-        if 'http://' not in sub_URL:
-            sub_URL = urllib.parse.urljoin(response.url, sub_URL) 
-        sub_URLs.append(sub_URL)
-    # Make list of URLs unique
-    sub_URLs = list(set(sub_URLs))
-    for sub_URL in sub_URLs:
+    try:
         # Get the webpage from the URL
-        response = requests.get(sub_URL)
+        response = requests.get(URL)
         # Parse the page
         soup = BeautifulSoup(response.text, "lxml")
         # Find the div block we are interested in
         identifier = "content_area"
         div = soup.find("div", {"id":identifier})
-        for product in div.find_all(itemtype="http://schema.org/Product"):
-            price = product.find(itemprop="price")['content']
-            name = product.find(itemprop="name").get_text()
-            description = div.find(itemprop="description").get_text()
-            m = re.search("([1234]\d{2})\s*[wW]*[pP]*", name)
+        sub_URLs = []
+        # Grab all sub URLs
+        for sub in div.find_all("a"):
+            sub_URL = sub.get('href')
+            if 'http://' not in sub_URL:
+                sub_URL = urllib.parse.urljoin(response.url, sub_URL) 
+            sub_URLs.append(sub_URL)
+        # Make list of URLs unique
+        sub_URLs = list(set(sub_URLs))
+        for sub_URL in sub_URLs:
+            # Get the webpage from the URL
+            response = requests.get(sub_URL)
+            # Parse the page
+            soup = BeautifulSoup(response.text, "lxml")
+            # Find the div block we are interested in
+            identifier = "content_area"
+            div = soup.find("div", {"id":identifier})
+            for product in div.find_all(itemtype="http://schema.org/Product"):
+                price = product.find(itemprop="price")['content']
+                name = product.find(itemprop="name").get_text()
+                description = div.find(itemprop="description").get_text()
+                m = re.search("([1234]\d{2})\s*[wW]*[pP]*", name)
+                if m:
+                    power = m.group(1)
+                else:
+                    power = 0
+                data = {}
+                data['Shop'] = shop
+                data['Prijs'] = price
+                data['Naam'] = name
+                data['power'] = power
+                #data['Beschrijving:'] = description
+                data['URL'] = sub_URL
+                df = df.append(data , ignore_index=True)
+    except:
+        print("Skipped {}".format(shop))
+    return df
+
+
+def solar_bouwmarkt(df,URL):
+    shop = "solar-bouwmarkt"
+    try:
+        # Get the webpage from the URL
+        response = requests.get(URL)
+        # Parse the page
+        soup = BeautifulSoup(response.text, "lxml")
+        
+        # Find the div block we are interested in
+        identifier = "info"
+        for product in soup.find_all("div", {"class":identifier}):
+            name = product.find("a").get_text().strip()
+            price = product.find("div", {"class":"left"}).get_text().strip()
+            m = re.search(WP_recipe, name)
             if m:
                 power = m.group(1)
             else:
                 power = 0
             data = {}
             data['Shop'] = shop
-            data['Prijs'] = price
+            data['Prijs'] = str.join('.',price.strip('€').replace('.','').split(','))
             data['Naam'] = name
             data['power'] = power
-            #data['Beschrijving:'] = description
-            data['URL'] = sub_URL
+            data['URL'] = URL
             df = df.append(data , ignore_index=True)
-    return df
-
-
-def solar_bouwmarkt(df,URL):
-    shop = "solar-bouwmarkt"
-    # Get the webpage from the URL
-    response = requests.get(URL)
-    # Parse the page
-    soup = BeautifulSoup(response.text, "lxml")
-    
-    # Find the div block we are interested in
-    identifier = "info"
-    for product in soup.find_all("div", {"class":identifier}):
-        name = product.find("a").get_text().strip()
-        price = product.find("div", {"class":"left"}).get_text().strip()
-        m = re.search(WP_recipe, name)
-        if m:
-            power = m.group(1)
-        else:
-            power = 0
-        data = {}
-        data['Shop'] = shop
-        data['Prijs'] = str.join('.',price.strip('€').replace('.','').split(','))
-        data['Naam'] = name
-        data['power'] = power
-        data['URL'] = URL
-        df = df.append(data , ignore_index=True)
+    except:
+        print("Skipped {}".format(shop))
     return df
 
 
@@ -201,53 +207,59 @@ def solargarant(df,URL):
 
 def stralendgroen(df,URL):
     shop = "stralendgroen"
-    # Get the webpage from the URL
-    response = requests.get(URL)
-    # Parse the page
-    soup = BeautifulSoup(response.text, "lxml")
-    for product in soup.find_all("div", {"class":"col-inner"}):
-        name = product.find("p", {"class":"product-title"}).get_text()
-        price = product.find("span", {"class":"woocommerce-Price-amount amount"}).text.split()[-1]
-        m = re.search(WP_recipe, name)
-        if m:
-            power = m.group(1)
-        else:
-            power = 0
-            # Add data to dataframe
-        data = {}
-        data['Shop'] = shop
-        data['Prijs'] = str.join('.',price.strip('€').split(','))
-        data['Naam'] = name
-        data['power'] = power
-        data['URL'] = URL
-        df = df.append(data , ignore_index=True)
+    try:
+        # Get the webpage from the URL
+        response = requests.get(URL)
+        # Parse the page
+        soup = BeautifulSoup(response.text, "lxml")
+        for product in soup.find_all("div", {"class":"col-inner"}):
+            name = product.find("p", {"class":"product-title"}).get_text()
+            price = product.find("span", {"class":"woocommerce-Price-amount amount"}).text.split()[-1]
+            m = re.search(WP_recipe, name)
+            if m:
+                power = m.group(1)
+            else:
+                power = 0
+                # Add data to dataframe
+            data = {}
+            data['Shop'] = shop
+            data['Prijs'] = str.join('.',price.strip('€').split(','))
+            data['Naam'] = name
+            data['power'] = power
+            data['URL'] = URL
+            df = df.append(data , ignore_index=True)
+    except:
+        print("Skipped {}".format(shop))
     return df
 
 
 def sun_solar(df,URL):
     shop = "sun_solar"
-    # Get the webpage from the URL
-    response = requests.get(URL)
-    # Parse the page
-    soup = BeautifulSoup(response.text, "lxml")
-    for product in soup.find_all("div", {"class":"inner_product_header"}):
-        name = product.find("h2", {"class":"woocommerce-loop-product__title"}).get_text()
-        price = product.find("span", {"class":"price"}).text
-        if ' ' in price:
-            price = price.split()[1]
-        m = re.search(WP_recipe, name)
-        if m:
-            power = m.group(1)
-        else:
-            power = 0
-        # Add data to dataframe
-        data = {}
-        data['Shop'] = shop
-        data['Prijs'] = str.join('.',price.strip('€').split(','))
-        data['Naam'] = name
-        data['power'] = power
-        data['URL'] = URL
-        df = df.append(data , ignore_index=True)
+    try:
+        # Get the webpage from the URL
+        response = requests.get(URL)
+        # Parse the page
+        soup = BeautifulSoup(response.text, "lxml")
+        for product in soup.find_all("div", {"class":"inner_product_header"}):
+            name = product.find("h2", {"class":"woocommerce-loop-product__title"}).get_text()
+            price = product.find("span", {"class":"price"}).text
+            if ' ' in price:
+                price = price.split()[1]
+            m = re.search(WP_recipe, name)
+            if m:
+                power = m.group(1)
+            else:
+                power = 0
+            # Add data to dataframe
+            data = {}
+            data['Shop'] = shop
+            data['Prijs'] = str.join('.',price.strip('€').split(','))
+            data['Naam'] = name
+            data['power'] = power
+            data['URL'] = URL
+            df = df.append(data , ignore_index=True)
+    except:
+        print("Skipped {}".format(shop))
     return df
 
 
@@ -317,45 +329,48 @@ def euro_electronics(df,URL):
             data['URL'] = URL
             df = df.append(data , ignore_index=True)
         except:
-            pass
+            print("Skipped {}".format(shop))
     return df
 
 
 def solar_outlet(df,URL):
     shop = "solar-outlet.nl"
-    # Get the webpage from the URL
-    response = requests.get(URL)
-    # Parse the page
-    soup = BeautifulSoup(response.text, "lxml")
-    for product in soup.find_all("div", {"class":"product-block-holder"}):
-        try:
-            name = product.find("img")['title'].strip()
-            price = product.find("div", {"class":"product-block-price"}).get_text().strip().split()[0]
-            m = re.search(WP_recipe, name)
-            if m:
-                power = m.group(1)
-            else:
-                power = 0
-            data = {}
-            data['Shop'] = shop
-            data['Prijs'] = data['Prijs'] = str.join('.',price.strip('€').split(','))
-            data['Naam'] = name
-            data['power'] = power
-            data['URL'] = URL
-            df = df.append(data , ignore_index=True)
-        except:
-            pass
+    try:
+        # Get the webpage from the URL
+        response = requests.get(URL)
+        # Parse the page
+        soup = BeautifulSoup(response.text, "lxml")
+        for product in soup.find_all("div", {"class":"product-block-holder"}):
+            try:
+                name = product.find("img")['title'].strip()
+                price = product.find("div", {"class":"product-block-price"}).get_text().strip().split()[0]
+                m = re.search(WP_recipe, name)
+                if m:
+                    power = m.group(1)
+                else:
+                    power = 0
+                data = {}
+                data['Shop'] = shop
+                data['Prijs'] = data['Prijs'] = str.join('.',price.strip('€').split(','))
+                data['Naam'] = name
+                data['power'] = power
+                data['URL'] = URL
+                df = df.append(data , ignore_index=True)
+            except:
+                print("Skipped {}".format(shop))
+    except:
+        print("Skipped {}".format(shop))
     return df
 
 
 def blijmetzonnepanelen(df,URL):
     shop = "blijmetzonnepanelen.nl"
-    # Get the webpage from the URL
-    response = requests.get(URL)
-    # Parse the page
-    soup = BeautifulSoup(response.text, "lxml")
-    for product in soup.find_all("div", {"class":"product-information"}):
-        try:
+    try:
+        # Get the webpage from the URL
+        response = requests.get(URL)
+        # Parse the page
+        soup = BeautifulSoup(response.text, "lxml")
+        for product in soup.find_all("div", {"class":"product-information"}):
             name = product.find("a").get_text().strip()
             price = product.find("span", {"class":"woocommerce-Price-amount amount"}).text
             m = re.search(WP_recipe, name)
@@ -370,19 +385,19 @@ def blijmetzonnepanelen(df,URL):
             data['power'] = power
             data['URL'] = URL
             df = df.append(data , ignore_index=True)
-        except:
-            pass
+    except:
+        print("Skipped {}".format(shop))
     return df
 
 
 def abczonnepanelen(df,URL):
     shop = "abczonnepanelen"
-    # Get the webpage from the URL
-    response = requests.get(URL)
-    # Parse the page
-    soup = BeautifulSoup(response.text, "lxml")
-    for product in soup.find_all("div", {"class":"product-card"}):
-        try:
+    try:
+        # Get the webpage from the URL
+        response = requests.get(URL)
+        # Parse the page
+        soup = BeautifulSoup(response.text, "lxml")
+        for product in soup.find_all("div", {"class":"product-card"}):
             name = product.find("h3").get_text().strip()
             price = product.find("span", {"class":"price"}).text
             if '€' in price:
@@ -399,8 +414,8 @@ def abczonnepanelen(df,URL):
             data['power'] = power
             data['URL'] = URL
             df = df.append(data , ignore_index=True)
-        except:
-            pass
+    except:
+        print("Skipped {}".format(shop))
     return df
 
 
@@ -478,6 +493,7 @@ for URL in ['https://www.abczonnepanelen.nl/zonnepanelen/losse-zonnepanelen/sunp
     df = abczonnepanelen(df,URL)
 
 URL='https://www.zonnepanelen-voordelig.nl/contents/phpsearch/search.php?=undefined&filterproc=filtersearch&fmt=html&pgid=d361&sub=1&searchFormSortBy=P-A&searchFormDisplayStyle=T&design=sfx-126_1&lang=nl&limitResultsPerPage=100'
+URL='https://www.zonnepanelen-voordelig.nl/contents/nl/d361_Zonnepanelen_kopen.html?start_page=1&searchFormSortBy=R-A&searchFormRootUse=A&limitResultsPerPage=100'
 df = zonnepanelenvoordelig(df,URL)
 
 print(df)
