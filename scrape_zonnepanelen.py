@@ -252,26 +252,31 @@ def sun_solar(df,URL):
 
 def winkelman(df,URL):
     shop = "winkelman"
-    # Get the webpage from the URL
-    response = requests.get(URL)
-    # Parse the page
-    soup = BeautifulSoup(response.text, "lxml")
-    for product in soup.find_all("div", {"class":"silk-list product-text content-product row item column"}):
-        name = product.find("a").get_text().strip()
-        price = product.find("div", {"class":"silk-listItem price"}).get_text().strip()
-        m = re.search(WP_recipe, name)
-        if m:
-            power = m.group(1)
-        else:
-            power = 0
-        # Add data to dataframe
-        data = {}
-        data['Shop'] = shop
-        data['Prijs'] = str.join('.',price.strip('€').split(','))
-        data['Naam'] = name
-        data['power'] = power
-        data['URL'] = URL
-        df = df.append(data , ignore_index=True)
+    try:
+        # Get the webpage from the URL
+        response = requests.get(URL)
+        # Parse the page
+        soup = BeautifulSoup(response.text, "lxml")
+        for product in product in soup.select('[class^="product d-flex"]'):
+            # Find the div block we are interested in
+            innerdiv = product.find("div", {"class":"data"})
+            name = innerdiv.find("div", {"class":"meta"}).get_text().strip()
+            price = product.find("div", {"class":"current"}).get_text().strip()
+            m = re.search(WP_recipe, name)
+            if m:
+                power = m.group(1)
+            else:
+                power = 0
+            # Add data to dataframe
+            data = {}
+            data['Shop'] = shop
+            data['Prijs'] = str.join('.',price.strip('€').split(','))
+            data['Naam'] = name
+            data['power'] = power
+            data['URL'] = URL
+            df = df.append(data , ignore_index=True)
+    except:
+        print("Skipped {}".format(shop))
     return df
 
 
@@ -443,7 +448,7 @@ URL="https://stralendgroen.nl/categorie/zonnepanelen/"
 df = stralendgroen(df,URL)
 URL='https://www.sun-solar.nl/index.php/product-categorie/zonnepanelen/?avia_extended_shop_select=yes&product_count=45'
 df = sun_solar(df,URL)
-URL='https://www.winkelman-zonnepanelen.nl/producten/zonnepanelen/'
+for URL in ['https://www.winkelman-zonnepanelen.nl/zonnepanelen/','https://www.winkelman-zonnepanelen.nl/zonnepanelen/page2.html']
 df = winkelman(df,URL)
 URL='https://www.euro-electronics.nl/zonnepanelen#filter:426d84a59a48254414a822135700a860'
 df = euro_electronics(df,URL)
