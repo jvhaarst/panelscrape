@@ -173,8 +173,8 @@ def solargarant(df,URL):
             # Parse the page
             soup = BeautifulSoup(response.text, "lxml")
             try:
-                for innerdiv in soup.find_all("div", {"class":"product-information"}):
-                    price = innerdiv.find("span", {"class":"price"}).text.split()[0]
+                for innerdiv in soup.find_all("div", {"data-loop"}):
+                    price = innerdiv.find("span", {"class":"woocommerce-Price-currencySymbol"}).text.split()[0]
                     name =  innerdiv.find("h3", {"class":"product-title"}).text
                     m = re.search(WP_recipe, name)
                     if m:
