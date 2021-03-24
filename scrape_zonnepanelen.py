@@ -11,6 +11,7 @@ import numpy
 import lxml
 import time
 import re
+import traceback
 
 df = pd.DataFrame()
 WP_recipe='([1234]\d{2})\s*[wW]*[pP]*'
@@ -252,21 +253,28 @@ def sun_solar(df,URL):
 
 def winkelman(df,URL):
     shop = "winkelman"
+    WP_recipe='([1234]\d{2})\s*[wW]+[pP]+|([1234]\d{2})\s*![wW]*![pP]*'
     try:
         # Get the webpage from the URL
         response = requests.get(URL)
         # Parse the page
         soup = BeautifulSoup(response.text, "lxml")
-        for product in product in soup.select('[class^="product d-flex"]'):
+        for product in soup.select('[class^="product d-flex"]'):
             # Find the div block we are interested in
             innerdiv = product.find("div", {"class":"data"})
             name = innerdiv.find("div", {"class":"meta"}).get_text().strip()
             price = product.find("div", {"class":"current"}).get_text().strip()
+            price = re.sub(',-','',price)
             m = re.search(WP_recipe, name)
             if m:
                 power = m.group(1)
             else:
-                power = 0
+                WP_recipe='([1234]\d{2})\s*[wW]*[pP]*'
+                m = re.search(WP_recipe, name)
+                if m:
+                    power = m.group(1)
+                else:
+                    power = 0
             # Add data to dataframe
             data = {}
             data['Shop'] = shop
@@ -439,38 +447,47 @@ def zonnepanelenvoordelig(df,URL):
 
 # Run functions that get and parse each site
 df = jenm(df)
+
 df = kerst_energy(df)
+
 for URL in ['https://www.solar-bouwmarkt.nl/zonnepanelen/alle-zonnepanelen/','https://www.solar-bouwmarkt.nl/zonnepanelen/alle-zonnepanelen/page2.html']:
     df = solar_bouwmarkt(df,URL)
+
 for URL in ['https://solargarant.nl/monokristallijn/','https://solargarant.nl/polykristallijn/','https://solargarant.nl/zwart-fullblack-zonnepanelen/']:
     df = solargarant(df,URL)
+
 URL="https://stralendgroen.nl/categorie/zonnepanelen/"
 df = stralendgroen(df,URL)
+
 URL='https://www.sun-solar.nl/index.php/product-categorie/zonnepanelen/?avia_extended_shop_select=yes&product_count=45'
 df = sun_solar(df,URL)
-for URL in ['https://www.winkelman-zonnepanelen.nl/zonnepanelen/','https://www.winkelman-zonnepanelen.nl/zonnepanelen/page2.html']
-df = winkelman(df,URL)
+
+for URL in ['https://www.winkelman-zonnepanelen.nl/zonnepanelen/','https://www.winkelman-zonnepanelen.nl/zonnepanelen/page2.html']:
+    df = winkelman(df,URL)
+
 URL='https://www.euro-electronics.nl/zonnepanelen#filter:426d84a59a48254414a822135700a860'
 df = euro_electronics(df,URL)
+
 URL='https://www.solar-outlet.nl/zonnepanelen/alle-zonnepanelen/'
 df = solar_outlet(df,URL)
+
 URL='https://www.blijmetzonnepanelen.nl/product-categorie/zonnepanelen/'
 df = blijmetzonnepanelen(df,URL)
+
 for URL in ['https://www.abczonnepanelen.nl/zonnepanelen/losse-zonnepanelen/sunpower/','https://www.abczonnepanelen.nl/zonnepanelen/losse-zonnepanelen/lg-electronic/']:
     df = abczonnepanelen(df,URL)
+
 URL='https://www.zonnepanelen-voordelig.nl/contents/phpsearch/search.php?=undefined&filterproc=filtersearch&fmt=html&pgid=d361&sub=1&searchFormSortBy=P-A&searchFormDisplayStyle=T&design=sfx-126_1&lang=nl&limitResultsPerPage=100'
 df = zonnepanelenvoordelig(df,URL)
 
-
-#
+print(df)
+# Clean up dataframe
 df['power'] = df['power'].astype(float)
 df['Prijs'] = df['Prijs'].astype(float)
 df['Shop'] = df['Shop'].astype('category')
 df['URL'] = df['URL'].astype('category')
 
 #print(df.info())
+# Export to file
 
 df.to_csv(filename)
-#print(filename)
-
-#print('{:.2f}'.format(time.time()-start)+' seconds runtime')
