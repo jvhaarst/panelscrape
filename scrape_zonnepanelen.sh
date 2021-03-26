@@ -12,3 +12,5 @@ python analyse.py
 #xz -f $NEW_FILE
 
 python analyse.py glas
+
+ln -sf $(ls -trh *xz.html | tail -1) index.html
