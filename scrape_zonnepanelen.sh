@@ -13,4 +13,4 @@ python analyse.py
 
 python analyse.py glas
 
-ln -sf $(ls -trh *xz.html | tail -1) index.html
+ln -f $(ls -trh *xz.html | tail -1) index.html
