@@ -14,3 +14,10 @@ python analyse.py
 python analyse.py glas
 
 ln -f $(ls -trh *xz.html | tail -1) index.html
+
+# Push new result to github
+git checkout results
+git add index.html
+git commit -m "New result" index.html
+git push origin results
+git checkout main
