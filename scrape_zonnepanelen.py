@@ -11,7 +11,7 @@ import numpy
 import lxml
 import time
 import re
-import traceback
+import sys
 
 df = pd.DataFrame()
 WP_recipe='([1234]\d{2})\s*[wW]*[pP]*'
@@ -329,7 +329,7 @@ def euro_electronics(df,URL):
             data['URL'] = URL
             df = df.append(data , ignore_index=True)
         except:
-            print("Skipped {}".format(shop))
+            pass
     return df
 
 
@@ -459,6 +459,35 @@ def zonnepanelenvoordelig(df,URL):
             print("Skipped {}".format(shop))
     return df
 
+def cedel(df,URL):
+    shop = "cedel.nl"
+    try:
+        # Get the webpage from the URL
+        response = requests.get(URL)
+        # Parse the page
+        soup = BeautifulSoup(response.text, "lxml")
+        for product in soup.find_all("div", {"class":"product-inner row"}):
+            try:
+                name = product.find("a").get_text().strip()
+                price = product.find("span", {"class":"price"}).get_text().strip().split()[0]
+                m = re.search(WP_recipe, name)
+                if m:
+                    power = m.group(1)
+                else:
+                    power = 0
+                data = {}
+                data['Shop'] = shop
+                data['Prijs'] = data['Prijs'] = str.join('.',price.strip('€').split(','))
+                data['Naam'] = name
+                data['Naam'] = re.sub('\n.*', '', name.strip())
+                data['power'] = power
+                data['URL'] = URL
+                df = df.append(data , ignore_index=True)
+            except:
+                print("Skipped {}".format(shop))
+    except:
+        print("Skipped {}".format(shop))
+    return df
 
 # Run functions that get and parse each site
 df = jenm(df)
@@ -492,11 +521,15 @@ df = blijmetzonnepanelen(df,URL)
 for URL in ['https://www.abczonnepanelen.nl/zonnepanelen/losse-zonnepanelen/sunpower/','https://www.abczonnepanelen.nl/zonnepanelen/losse-zonnepanelen/lg-electronic/']:
     df = abczonnepanelen(df,URL)
 
+URL='https://webshop.cedel.nl/Zonnepanelen'
+df = cedel(df,URL)
+
 #URL='https://www.zonnepanelen-voordelig.nl/contents/phpsearch/search.php?=undefined&filterproc=filtersearch&fmt=html&pgid=d361&sub=1&searchFormSortBy=P-A&searchFormDisplayStyle=T&design=sfx-126_1&lang=nl&limitResultsPerPage=100'
 #URL='https://www.zonnepanelen-voordelig.nl/contents/nl/d361_Zonnepanelen_kopen.html?start_page=1&searchFormSortBy=R-A&searchFormRootUse=A&limitResultsPerPage=100'
 #df = zonnepanelenvoordelig(df,URL)
 
 # print(df)
+# sys.exit()
 # Clean up dataframe
 df['power'] = df['power'].astype(float)
 df['Prijs'] = df['Prijs'].astype(float)
