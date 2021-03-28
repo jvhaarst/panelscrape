@@ -11,11 +11,11 @@ set -o pipefail
 cd ~/public_html/
 
 # Push new result to github
-git checkout results
+git checkout --quiet results
 
 # create new index.html from last result for github.io
 ln -f $(ls -trh *xz.html | tail -1) index.html
 
 git commit --message "New result" --quiet index.html
-git checkout main
+git checkout --quiet main
 git push --quiet origin results
