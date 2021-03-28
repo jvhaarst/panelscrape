@@ -1,4 +1,4 @@
-#PanelScrape
+# PanelScrape
 
 This project uses Python to grab, parse and analyse data from solar panel vendors in the Netherlands
 
