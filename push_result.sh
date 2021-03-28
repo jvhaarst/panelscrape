@@ -7,6 +7,8 @@ set -o pipefail
 
 # for debugging
 #set -o xtrace
+# Change to data folder
+cd ~/public_html/
 
 # Push new result to github
 git checkout results
