@@ -35,6 +35,6 @@ git checkout results
 ln -f $(ls -trh *xz.html | tail -1) index.html
 
 git add index.html
-git commit -m "New result" 
+git commit -m "New result" index.html
 git checkout main
 git push origin results
