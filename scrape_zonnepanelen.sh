@@ -1,23 +1,40 @@
 #!/bin/bash
+
+# bash options
+set -o errexit
+set -o nounset
+set -o pipefail
+
+# for debugging
+set -o xtrace
+
+# Activate python environment
 . "/home/jvhaarst/miniconda3/etc/profile.d/conda.sh"
 conda activate scrape
+
+# Change to data folder
 cd /home/jvhaarst/public_html/
+
+# Get data
 python scrape_zonnepanelen.py
+
+# Create graphs of all data
 python analyse.py
 
-#FILE=$(ls -tr zonnepanelen.*.csv.xz | grep -v glas | tail -1)
-#NEW_FILE=${FILE%.csv.xz}.glas.csv
-#xzcat $FILE | head -1 > $NEW_FILE
-#xzgrep -i glas $FILE >> $NEW_FILE
-#xz -f $NEW_FILE
-
+# Create graphs of panels with glas keyword
 python analyse.py glas
 
+
+# create new index.html from last result for local view 
 ln -f $(ls -trh *xz.html | tail -1) index.html
 
 # Push new result to github
 git checkout results
+
+# create new index.html from last result for github.io
+ln -f $(ls -trh *xz.html | tail -1) index.html
+
 git add index.html
-git commit -m "New result" index.html
-git push origin results
+git commit -m "New result" 
 git checkout main
+git push origin results
