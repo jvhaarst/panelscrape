@@ -57,7 +57,7 @@ tools = "box_zoom, undo,tap"
 shops=df['Shop'].unique()
 
 # First plot, price
-s1 = figure(width=1600, height=800,tools=tools,title="PV panelen prijzen - "+datetime.date.today().isoformat())
+s1 = figure(width=1600, height=800,tools=tools,title="PV panelen prijzen - "+datetime.datetime.now(datetime.timezone.utc).isoformat(timespec='minutes'))
 s1.xaxis.axis_label = 'Wp'
 s1.yaxis.axis_label = '€'
 s1.scatter('power','Prijs', source=source, legend_field="Shop", fill_alpha=0.5, size=7,
@@ -78,7 +78,7 @@ taptool_1 = s1.select(type=TapTool)
 taptool_1.callback = OpenURL(url="@URL")
 
 # Second plot, percentage difference wrt minimal price/Wp
-s2 = figure(width=1600, height=800,tools=tools,title="PV panelen prijzen - "+datetime.date.today().isoformat())
+s2 = figure(width=1600, height=800,tools=tools,title="PV panelen prijzen - "+datetime.datetime.now(datetime.timezone.utc).isoformat(timespec='minutes'))
 s2.xaxis.axis_label = 'Wp'
 s2.yaxis.axis_label = '% tov min €/Wp'
 s2.scatter('power','% tov min €/Wp', source=source, legend_field="Shop", fill_alpha=0.5, size=7,
