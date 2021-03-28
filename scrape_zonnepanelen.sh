@@ -26,4 +26,4 @@ python analyse.py
 python analyse.py glas
 
 # create new index.html from last result for local view 
-ln -f $(ls -trh *xz.html | tail -1) index.html
+#ln -f $(ls -trh *xz.html | tail -1) index.html
