@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Activate python environment
+. "${HOME}/miniconda3/etc/profile.d/conda.sh"
+conda activate scrape
+
 # bash options
 set -o errexit
 set -o nounset
@@ -8,9 +12,6 @@ set -o pipefail
 # for debugging
 #set -o xtrace
 
-# Activate python environment
-. "~/miniconda3/etc/profile.d/conda.sh"
-conda activate scrape
 
 # Change to data folder
 cd ~/public_html/
