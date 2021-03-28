@@ -18,4 +18,4 @@ ln -f $(ls -trh *xz.html | tail -1) index.html
 
 git commit --message "New result" --quiet index.html
 git checkout main
-git push origin results
+git push --quiet origin results
