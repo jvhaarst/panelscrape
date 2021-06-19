@@ -215,6 +215,8 @@ def stralendgroen(df,URL):
         for product in soup.find_all("div", {"class":"col-inner"}):
             name = product.find("p", {"class":"product-title"}).get_text()
             price = product.find("span", {"class":"woocommerce-Price-amount amount"}).text.split()[-1]
+            # Remove comma 
+            price = price.replace(',','')
             m = re.search(WP_recipe, name)
             if m:
                 power = m.group(1)
@@ -528,15 +530,6 @@ df = cedel(df,URL)
 #URL='https://www.zonnepanelen-voordelig.nl/contents/nl/d361_Zonnepanelen_kopen.html?start_page=1&searchFormSortBy=R-A&searchFormRootUse=A&limitResultsPerPage=100'
 #df = zonnepanelenvoordelig(df,URL)
 
-# print(df)
-# sys.exit()
-# Clean up dataframe
-df['power'] = df['power'].astype(float)
-df['Prijs'] = df['Prijs'].astype(float)
-df['Shop'] = df['Shop'].astype('category')
-df['URL'] = df['URL'].astype('category')
-
-#print(df.info())
 # Export to file
 
 df.to_csv(filename)
