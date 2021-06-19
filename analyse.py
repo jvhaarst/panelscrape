@@ -26,6 +26,12 @@ filename = max(iglob('*.csv.xz'), key=os.path.getmtime)
 graphfile = filename+'.html'
 
 df1 = pd.read_csv(filename,index_col=0)
+# Clean up dataframe
+df1['power'] = df1['power'].astype(float)
+df1['Prijs'] = df1['Prijs'].astype(float)
+df1['Shop'] = df1['Shop'].astype('category')
+df1['URL'] = df1['URL'].astype('category')
+
 df2 = pd.read_excel('solarwindbioshop.xlsx')
 
 df = pd.concat([df1,df2],sort=False)
