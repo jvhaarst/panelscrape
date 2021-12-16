@@ -201,7 +201,7 @@ def solargarant(df,URL):
             except AttributeError:
                 pass
     except Exception as e:
-        print(e.message, e.args)
+        print(e)
         print("Skipped {}".format(shop))
     return df
 
